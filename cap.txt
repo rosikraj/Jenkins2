@@ -1,56 +1,91 @@
-import React, { useState } from "react";
-import { Alert, Button, CardActions, CardContent, Divider, TextField } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
+package com.infinite.model;
 
-const Captcha = ({ onSuccess }) => {
-  const randomString = Math.random().toString(36).slice(8);
-  const [captcha, setCaptcha] = useState(randomString);
-  const [text, setText] = useState("");
-  const [valid, setValid] = useState(false);
-  const [success, setSuccess] = useState(false);
+import java.util.Date;
 
-  const refreshString = () => {
-    setText("");
-    setCaptcha(Math.random().toString(36).slice(8));
-  };
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-  const matchCaptcha = (event) => {
-    event.preventDefault();
-    if (text === captcha) {
-      setValid(false);
-      setSuccess(true);
-      onSuccess();
-    } else {
-      setValid(true);
-      setSuccess(false);
-    }
-  };
+@Entity
+@Table(name = "product")
+public class Product {
+	@Id
+	@Column(name = "Product_Id")
+	private int productid;
+	@Column(name = "Product_Name")
+	private String pname;
+	@Column(name = "Manufacture_Date")
+	private Date manufacturedate;
+	@Column(name = "Expiry_Date")
+	private Date expirydate;
+	@Column(name = "Price")
+	private int price;
+	@Column(name = "Quantity")
+	private int quantity;
+	@Column(name = "Stock")
+	private int stock;
 
-  return (
-    <>
-      {success && <Alert variant="outlined" sx={{ marginBottom: "50px" }}>Successful</Alert>}
-      <div className="card">
-        <Divider />
-        <CardContent>
-          <CardActions>
-            <div className="h3">{captcha}</div>
-            <Button startIcon={<RefreshIcon />} onClick={refreshString}></Button>
-          </CardActions>
-          <form onSubmit={matchCaptcha}>
-            <TextField
-              label="Enter Captcha"
-              focused
-              value={text}
-              fullWidth
-              onChange={(e) => setText(e.target.value)}
-              error={valid}
-              helperText={valid && "Invalid Captcha"}
-            />
-          </form>
-        </CardContent>
-      </div>
-    </>
-  );
-};
+	// @Column(name="User_Id")
+	// private int userid;
+	public Product() {
 
-export default Captcha;
+	}
+
+	public int getProductid() {
+		return productid;
+	}
+
+	public void setProductid(int productid) {
+		this.productid = productid;
+	}
+
+	public String getPname() {
+		return pname;
+	}
+
+	public void setPname(String pname) {
+		this.pname = pname;
+	}
+
+	public Date getManufacturedate() {
+		return manufacturedate;
+	}
+
+	public void setManufacturedate(Date manufacturedate) {
+		this.manufacturedate = manufacturedate;
+	}
+
+	public Date getExpirydate() {
+		return expirydate;
+	}
+
+	public void setExpirydate(Date expirydate) {
+		this.expirydate = expirydate;
+	}
+
+	public int getPrice() {
+		return price;
+	}
+
+	public void setPrice(int price) {
+		this.price = price;
+	}
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+
+	public int getStock() {
+		return stock;
+	}
+
+	public void setStock(int stock) {
+		this.stock = stock;
+	}
+
+}
