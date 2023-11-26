@@ -1,78 +1,372 @@
-mysql> desc vendor;
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| User_Id          | int          | NO   | PRI | NULL    | auto_increment |
-| First_name       | varchar(50)  | YES  |     | NULL    |                |
-| Last_name        | varchar(50)  | YES  |     | NULL    |                |
-| Email            | varchar(100) | YES  |     | NULL    |                |
-| License          | varchar(255) | YES  |     | NULL    |                |
-| Certificate      | varchar(255) | YES  |     | NULL    |                |
-| Phno             | varchar(15)  | YES  |     | NULL    |                |
-| Password         | varchar(255) | YES  |     | NULL    |                |
-| Confirm_Password | varchar(255) | YES  |     | NULL    |                |
-+------------------+--------------+------+-----+---------+----------------+
-9 rows in set (0.02 sec)
+package com.infinite;
 
-mysql> desc admin;
-+-----------+--------------+------+-----+---------+-------+
-| Field     | Type         | Null | Key | Default | Extra |
-+-----------+--------------+------+-----+---------+-------+
-| User_name | varchar(255) | YES  |     | NULL    |       |
-| Password  | varchar(255) | YES  |     | NULL    |       |
-+-----------+--------------+------+-----+---------+-------+
-2 rows in set (0.01 sec)
+import org.apache.log4j.Logger;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 
-mysql> desc customer;
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| User_Id          | int          | NO   | PRI | NULL    | auto_increment |
-| First_name       | varchar(50)  | YES  |     | NULL    |                |
-| Last_name        | varchar(50)  | YES  |     | NULL    |                |
-| email            | varchar(100) | YES  |     | NULL    |                |
-| Address          | varchar(255) | YES  |     | NULL    |                |
-| Phno             | varchar(15)  | YES  |     | NULL    |                |
-| Password         | varchar(255) | YES  |     | NULL    |                |
-| Confirm_Password | varchar(255) | YES  |     | NULL    |                |
-+------------------+--------------+------+-----+---------+----------------+
-8 rows in set (0.00 sec)
+@SpringBootApplication
+@EnableCaching(proxyTargetClass = true)
+public class SpringBootMvcApplication {
+	private static final Logger logger = Logger.getLogger(SpringBootMvcApplication.class);
 
-mysql> desc items;
-+-----------+------+------+-----+---------+-------+
-| Field     | Type | Null | Key | Default | Extra |
-+-----------+------+------+-----+---------+-------+
-| Order_Id  | int  | YES  | MUL | NULL    |       |
-| Item_list | int  | YES  |     | NULL    |       |
-+-----------+------+------+-----+---------+-------+
-2 rows in set (0.00 sec)
+	public static void main(String[] args) {
+		SpringApplication.run(SpringBootMvcApplication.class, args);
+	}
 
-mysql> desc orderlist;
-+--------------+--------------+------+-----+---------+----------------+
-| Field        | Type         | Null | Key | Default | Extra          |
-+--------------+--------------+------+-----+---------+----------------+
-| Order_Id     | int          | NO   | PRI | NULL    | auto_increment |
-| User_Id      | int          | YES  | MUL | NULL    |                |
-| Product_Id   | int          | YES  | MUL | NULL    |                |
-| Product_name | varchar(255) | YES  |     | NULL    |                |
-| price        | int          | YES  |     | NULL    |                |
-| Quantity     | int          | YES  |     | NULL    |                |
-+--------------+--------------+------+-----+---------+----------------+
-6 rows in set (0.00 sec)
+}
 
-mysql> desc product;
-+------------------+--------------+------+-----+---------+----------------+
-| Field            | Type         | Null | Key | Default | Extra          |
-+------------------+--------------+------+-----+---------+----------------+
-| Product_Id       | int          | NO   | PRI | NULL    | auto_increment |
-| Product_Name     | varchar(255) | YES  |     | NULL    |                |
-| Manufacture_Date | date         | YES  |     | NULL    |                |
-| Expiry_Date      | date         | YES  |     | NULL    |                |
-| Price            | int          | YES  |     | NULL    |                |
-| Quantity         | int          | YES  |     | NULL    |                |
-| Stock            | int          | YES  |     | NULL    |                |
-| User_Id          | int          | YES  | MUL | NULL    |                |
-+------------------+--------------+------+-----+---------+----------------+
-8 rows in set (0.01 sec)
 
-mysql>
+package com.infinite;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+@Configuration
+public class CorsConfig {
+
+	
+	 @Bean
+	    public CorsFilter corsFilter() {
+	        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	        CorsConfiguration config = new CorsConfiguration();
+	        config.setAllowCredentials(true);
+	config.addAllowedOrigin("http://localhost:3000"); // Replace with your React app's URL
+	        config.addAllowedHeader("*");
+	        config.addAllowedMethod("*");
+	        config.setAllowCredentials(true);
+	        config.addExposedHeader("Authorization");
+	        source.registerCorsConfiguration("/**", config);
+	        return new CorsFilter(source);
+	    }
+}
+
+
+package com.infinite;
+
+import java.util.Properties;
+
+import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@Configuration
+@EnableTransactionManagement
+public class HibernateConfiguration {
+	
+	@Value("${db.driver}")
+	private String DRIVER;
+	
+	@Value("${db.password}")
+	private String PASSWORD;
+	
+	@Value("${db.username}")
+	private String USERNAME;
+	
+	@Value("${hibernate.dialect}")
+	private String DIALECT;
+	
+	@Value("${db.url}")
+	private String URL;
+	
+	@Value("${hibernate.show_sql}")
+	private String SHOW_SQL;
+	
+	@Value("${entitymanager.packagesToScan}")
+	private String PACKAGES_TO_SCAN;
+	
+	@Bean
+	public DataSource dataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName(DRIVER);
+		dataSource.setUrl(URL);
+		dataSource.setUsername(USERNAME);
+		dataSource.setPassword(PASSWORD);
+		return dataSource;
+	}
+	@Bean
+	public LocalSessionFactoryBean sessionFactory() {
+		LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+		sessionFactory.setDataSource(dataSource());
+		sessionFactory.setPackagesToScan(PACKAGES_TO_SCAN);
+		Properties hibernateProperties = new Properties();
+		hibernateProperties.put("hibernate.dialect", DIALECT);
+		hibernateProperties.put("hibernate.show_sql", SHOW_SQL);
+		sessionFactory.setHibernateProperties(hibernateProperties);
+		return sessionFactory;
+	}
+	@Bean
+	public HibernateTransactionManager transactionManager() {
+		HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+		transactionManager.setSessionFactory(sessionFactory().getObject());
+		return transactionManager;
+	}
+}
+
+package com.infinite.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.infinite.model.CustomerLogin;
+import com.infinite.service.ICustomerService;
+
+@RestController
+@CrossOrigin("http://localhost:3000/")
+public class RegisterController {
+	@Autowired
+	ICustomerService cserviceimpl;
+
+	
+	@RequestMapping(value = "/register", method = RequestMethod.POST, headers = "Accept=application/json")
+	public ResponseEntity<String> addCustomer(@RequestBody CustomerLogin customerLogin) {
+		try {
+			cserviceimpl.addCustomer(customerLogin);
+            return ResponseEntity.ok("Registration successful");
+
+		}
+		catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
+        }
+	}
+	
+	@RequestMapping(value="/login",method = RequestMethod.POST, headers = "Accept=application/json")
+	public ResponseEntity<String> loginUser(@RequestBody CustomerLogin login) {
+        String username = login.getUsername();
+        String password = login.getPassword();
+ 
+        CustomerLogin validateuser = cserviceimpl.validateUser(username, password);
+        if(validateuser!=null) {
+        	//returns status code 200
+        	return ResponseEntity.ok("Login successfull");
+        }
+        else {
+        	//returns status code 401 unauthorized
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("invalid credintials");
+
+        }
+       
+	}
+
+
+}
+
+package com.infinite.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "Customer")
+public class CustomerLogin {
+
+	@Id
+	@Column(name = "User_Id")
+	private int user_Id;
+	
+	@Column(name = "First_name")
+	private String username;
+	
+	@Column(name = "Last_name")
+	private String last_name;
+	
+	@Column(name = "email")
+	private String email;
+	
+	@Column(name = "Address")
+	private String address;
+	
+	@Column(name = "Phno")
+	private String phno;
+	
+	@Column(name = "Password")
+	private String password;
+	
+	@Column(name = "Confirm_Password")
+	private String confirm_Password;
+
+	public int getUser_Id() {
+		return user_Id;
+	}
+
+	public void setUser_Id(int user_Id) {
+		this.user_Id = user_Id;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getLast_name() {
+		return last_name;
+	}
+
+	public void setLast_name(String last_name) {
+		this.last_name = last_name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getPhno() {
+		return phno;
+	}
+
+	public void setPhno(String phno) {
+		this.phno = phno;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getConfirm_Password() {
+		return confirm_Password;
+	}
+
+	public void setConfirm_Password(String confirm_Password) {
+		this.confirm_Password = confirm_Password;
+	}
+
+	
+	
+}
+
+package com.infinite.repository;
+
+import com.infinite.model.CustomerLogin;
+
+public interface ICustomerDao {
+
+	public CustomerLogin addCustomer(CustomerLogin customerLogin);
+
+	public CustomerLogin validateuser(String username, String password);
+}
+
+package com.infinite.repository;
+
+import org.apache.log4j.Logger;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.infinite.model.CustomerLogin;
+
+@Repository
+@EnableAsync(proxyTargetClass = true)
+@EnableCaching(proxyTargetClass = true)
+@EnableTransactionManagement
+public class CustomerDaoImpl implements ICustomerDao {
+	private static final Logger logger = Logger.getLogger(CustomerDaoImpl.class);
+
+	@Autowired
+	private SessionFactory sesfactory;
+	public void setSesfactory(SessionFactory sesfactory) {
+		this.sesfactory = sesfactory;
+	}
+	public CustomerLogin addCustomer(CustomerLogin customerLogin) {
+		// TODO Auto-generated method stub
+		Session session = this.sesfactory.getCurrentSession();
+		session.save(customerLogin);
+		return customerLogin;
+	}
+	@Transactional
+	public CustomerLogin validateuser(String username, String password) {
+		// TODO Auto-generated method stub
+		Session session = this.sesfactory.getCurrentSession();
+		Query query=session.createQuery("FROM CustomerLogin WHERE First_name= :username AND password= :password");
+		query.setParameter("username", username);
+		query.setParameter("password", password);
+		CustomerLogin validateuser=(CustomerLogin) query.uniqueResult();
+		return validateuser;
+		}
+}
+
+
+package com.infinite.service;
+
+import com.infinite.model.CustomerLogin;
+public interface ICustomerService {
+	public void addCustomer(CustomerLogin customerLogin);
+	public CustomerLogin validateUser(String username, String password);
+}
+
+
+package com.infinite.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.infinite.model.CustomerLogin;
+import com.infinite.repository.ICustomerDao;
+@Service
+public class CustomerServiceImpl implements ICustomerService {
+	
+	@Autowired
+	ICustomerDao cdaoimpl;
+	
+	@Transactional
+	public void addCustomer(CustomerLogin customerLogin) {
+		// TODO Auto-generated method stub
+		cdaoimpl.addCustomer(customerLogin);
+	}
+
+	@Transactional
+	public CustomerLogin validateUser(String username, String password) {
+		// TODO Auto-generated method stub
+		return cdaoimpl.validateuser(username, password);
+		
+	}
+	
+
+}
+
