@@ -1,94 +1,78 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Link, useParams } from "react-router-dom";
-import Navbaradmin from "./Navbaradmin";
-function Product() {
- 
-    const [users, setUsers] = useState([]);
- 
-    const { id } = useParams();
- 
-    useEffect(() => {
-        loadUsers();
-    }, []);
- 
-    const loadUsers = async () => {
-        const result = await axios.get("http://localhost:8080/display");
-        setUsers(result.data);
-    };
- 
-    const deleteUser = async (id) => {
-        await axios.delete(`http://localhost:8080/delete`);
-        loadUsers();
-    };
- 
-    return (
-        <center>
-            <div>
-                <Navbaradmin />
-                <div className="container">
-                    <div className="py-6">
-                        <table className="table border shadow">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Product Id</th>
-                                    <th scope="col">Product Name</th>
-                                    <th scope="col">Manufacture date</th>
-                                    <th scope="col">Expire Date</th>
-                                    <th scope="col">Price</th>
-                                    <th scope="col">Quality</th>
-                                    <th scope="col">Stock</th>
-                                    
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user, index) => (
-                                    <tr>
-                                        <th scope="row" key={index}>
-                                            {index + 1}
-                                        </th>
-                                        <td>{user.productid}</td>
-                                        <td>{user.pname}</td>
-                                        <td>{user.manufacturedate}</td>
-                                        <td>{user.expirydate}</td>
-                                        <td>{user.price}</td>
-                                        <td>{user.quantity}</td>
-                                        <td>{user.stock}</td>
-                                        <td>
-                                            <Link
-                                                className="btn btn-outline-primary mx-2"
-                                                to={`/reportview/${user.id}`}
-                                            >
-                                                View
-                                            </Link>
-                                            <Link
-                                                className="btn btn-outline-primary mx-2"
-                                                to={`/edituserdetails/${user.id}`}
-                                            >
-                                                Edit
-                                            </Link>
-                                            <button
-                                                class="w px-12 py-2 text-sm font-end tracking-wide text-white capitalize transition-colors md:text-center duration-300 transform bg-blue-400 rounded-md hover:bg-blue-400"
-                                                onClick={() => deleteUser(user.id)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </center>
-    );
-}
-export default Product
+mysql> desc vendor;
++------------------+--------------+------+-----+---------+----------------+
+| Field            | Type         | Null | Key | Default | Extra          |
++------------------+--------------+------+-----+---------+----------------+
+| User_Id          | int          | NO   | PRI | NULL    | auto_increment |
+| First_name       | varchar(50)  | YES  |     | NULL    |                |
+| Last_name        | varchar(50)  | YES  |     | NULL    |                |
+| Email            | varchar(100) | YES  |     | NULL    |                |
+| License          | varchar(255) | YES  |     | NULL    |                |
+| Certificate      | varchar(255) | YES  |     | NULL    |                |
+| Phno             | varchar(15)  | YES  |     | NULL    |                |
+| Password         | varchar(255) | YES  |     | NULL    |                |
+| Confirm_Password | varchar(255) | YES  |     | NULL    |                |
++------------------+--------------+------+-----+---------+----------------+
+9 rows in set (0.02 sec)
 
-////
-@RequestMapping(value = "/display", method = RequestMethod.POST, headers = "Accept=application/json")
-	public List<Product> getAllProducts(){
-		return pserviceimpl.getAllProducts();
-		
-	}
+mysql> desc admin;
++-----------+--------------+------+-----+---------+-------+
+| Field     | Type         | Null | Key | Default | Extra |
++-----------+--------------+------+-----+---------+-------+
+| User_name | varchar(255) | YES  |     | NULL    |       |
+| Password  | varchar(255) | YES  |     | NULL    |       |
++-----------+--------------+------+-----+---------+-------+
+2 rows in set (0.01 sec)
+
+mysql> desc customer;
++------------------+--------------+------+-----+---------+----------------+
+| Field            | Type         | Null | Key | Default | Extra          |
++------------------+--------------+------+-----+---------+----------------+
+| User_Id          | int          | NO   | PRI | NULL    | auto_increment |
+| First_name       | varchar(50)  | YES  |     | NULL    |                |
+| Last_name        | varchar(50)  | YES  |     | NULL    |                |
+| email            | varchar(100) | YES  |     | NULL    |                |
+| Address          | varchar(255) | YES  |     | NULL    |                |
+| Phno             | varchar(15)  | YES  |     | NULL    |                |
+| Password         | varchar(255) | YES  |     | NULL    |                |
+| Confirm_Password | varchar(255) | YES  |     | NULL    |                |
++------------------+--------------+------+-----+---------+----------------+
+8 rows in set (0.00 sec)
+
+mysql> desc items;
++-----------+------+------+-----+---------+-------+
+| Field     | Type | Null | Key | Default | Extra |
++-----------+------+------+-----+---------+-------+
+| Order_Id  | int  | YES  | MUL | NULL    |       |
+| Item_list | int  | YES  |     | NULL    |       |
++-----------+------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> desc orderlist;
++--------------+--------------+------+-----+---------+----------------+
+| Field        | Type         | Null | Key | Default | Extra          |
++--------------+--------------+------+-----+---------+----------------+
+| Order_Id     | int          | NO   | PRI | NULL    | auto_increment |
+| User_Id      | int          | YES  | MUL | NULL    |                |
+| Product_Id   | int          | YES  | MUL | NULL    |                |
+| Product_name | varchar(255) | YES  |     | NULL    |                |
+| price        | int          | YES  |     | NULL    |                |
+| Quantity     | int          | YES  |     | NULL    |                |
++--------------+--------------+------+-----+---------+----------------+
+6 rows in set (0.00 sec)
+
+mysql> desc product;
++------------------+--------------+------+-----+---------+----------------+
+| Field            | Type         | Null | Key | Default | Extra          |
++------------------+--------------+------+-----+---------+----------------+
+| Product_Id       | int          | NO   | PRI | NULL    | auto_increment |
+| Product_Name     | varchar(255) | YES  |     | NULL    |                |
+| Manufacture_Date | date         | YES  |     | NULL    |                |
+| Expiry_Date      | date         | YES  |     | NULL    |                |
+| Price            | int          | YES  |     | NULL    |                |
+| Quantity         | int          | YES  |     | NULL    |                |
+| Stock            | int          | YES  |     | NULL    |                |
+| User_Id          | int          | YES  | MUL | NULL    |                |
++------------------+--------------+------+-----+---------+----------------+
+8 rows in set (0.01 sec)
+
+mysql>
